@@ -296,41 +296,44 @@ function renderCharts(data) {
     // Here we just plot the last 10 scores to show variance.
 
     // Risk Trend Chart
-    if (!riskTrendChart) {
-        const ctx = document.getElementById('riskTrendChart').getContext('2d');
-        riskTrendChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Risk Scores',
-                    data: [],
-                    borderColor: '#3b82f6',
-                    tension: 0.4,
-                    fill: true,
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)'
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true, max: 100 },
-                    x: { display: false }
-                },
-                plugins: { legend: { display: false } }
-            }
-        });
+    if (window.riskTrendChart) {
+        window.riskTrendChart.destroy();
     }
+    const ctx = document.getElementById('riskTrendChart').getContext('2d');
+    window.riskTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Risk Scores',
+                data: [],
+                borderColor: '#3b82f6',
+                tension: 0.4,
+                fill: true,
+                backgroundColor: 'rgba(59, 130, 246, 0.1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, max: 100 },
+                x: { display: false }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
 
     // Update Trend Data
     const reversed = [...data].reverse().slice(-50); // Show last 50 points
-    riskTrendChart.data.labels = reversed.map(t => {
-        // Format timestamp nicely (HH:mm)
-        const date = new Date(t.timestamp);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    window.riskTrendChart.data.labels = reversed.map(t => {
+        // Handle various timestamp formats robustly
+        const dateStr = t.timestamp.replace(' ', 'T'); // Ensure ISO format
+        const date = new Date(dateStr);
+        return isNaN(date) ? t.timestamp : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     });
-    riskTrendChart.data.datasets[0].data = reversed.map(t => t.score);
-    riskTrendChart.update();
+    window.riskTrendChart.data.datasets[0].data = reversed.map(t => t.score);
+    window.riskTrendChart.update();
 
     // Location Chart
     // Aggregate risk counts by location
@@ -343,39 +346,37 @@ function renderCharts(data) {
     const locLabels = Object.keys(locationCounts);
     const locData = Object.values(locationCounts);
 
-    if (!window.locationChartInstance) { // Use a window global to track if created
-        const ctxLoc = document.getElementById('locationChart').getContext('2d');
-        window.locationChartInstance = new Chart(ctxLoc, {
-            type: 'bar',
-            data: {
-                labels: locLabels,
-                datasets: [{
-                    label: 'Risks by Location',
-                    data: locData,
-                    backgroundColor: [
-                        'rgba(59, 130, 246, 0.6)',
-                        'rgba(239, 68, 68, 0.6)',
-                        'rgba(249, 115, 22, 0.6)',
-                        'rgba(34, 197, 94, 0.6)',
-                        'rgba(168, 85, 247, 0.6)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#2d3748' } },
-                    x: { grid: { display: false } }
-                }
-            }
-        });
-    } else {
-        // Update existing chart
-        window.locationChartInstance.data.datasets[0].data = locData;
-        window.locationChartInstance.update();
+    if (window.locationChartInstance) {
+        window.locationChartInstance.destroy();
     }
+    const ctxLoc = document.getElementById('locationChart').getContext('2d');
+    window.locationChartInstance = new Chart(ctxLoc, {
+        type: 'bar',
+        data: {
+            labels: locLabels,
+            datasets: [{
+                label: 'Risks by Location',
+                data: locData,
+                backgroundColor: [
+                    'rgba(59, 130, 246, 0.6)',
+                    'rgba(239, 68, 68, 0.6)',
+                    'rgba(249, 115, 22, 0.6)',
+                    'rgba(34, 197, 94, 0.6)',
+                    'rgba(168, 85, 247, 0.6)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#2d3748' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
 
     // Vendor Category Chart
     const vendorCounts = {};
@@ -387,31 +388,28 @@ function renderCharts(data) {
     const vendLabels = Object.keys(vendorCounts);
     const vendData = Object.values(vendorCounts);
 
-    if (!window.vendorChartInstance) {
-        const ctxVend = document.getElementById('vendorChart').getContext('2d');
-        window.vendorChartInstance = new Chart(ctxVend, {
-            type: 'doughnut',
-            data: {
-                labels: vendLabels,
-                datasets: [{
-                    data: vendData,
-                    backgroundColor: [
-                        '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'right', labels: { color: '#94a3b8' } }
-                }
-            }
-        });
-    } else {
-        window.vendorChartInstance.data.labels = vendLabels;
-        window.vendorChartInstance.data.datasets[0].data = vendData;
-        window.vendorChartInstance.update();
+    if (window.vendorChartInstance) {
+        window.vendorChartInstance.destroy();
     }
+    const ctxVend = document.getElementById('vendorChart').getContext('2d');
+    window.vendorChartInstance = new Chart(ctxVend, {
+        type: 'doughnut',
+        data: {
+            labels: vendLabels,
+            datasets: [{
+                data: vendData,
+                backgroundColor: [
+                    '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { color: '#94a3b8' } }
+            }
+        }
+    });
 }

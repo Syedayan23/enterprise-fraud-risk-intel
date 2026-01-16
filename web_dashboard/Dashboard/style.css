@@ -17,28 +17,38 @@
     padding: 0;
 }
 
+/* Layout Fixes */
+html,
+body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    /* Prevent body scroll */
+}
+
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-dark);
     color: var(--text-primary);
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
+    line-height: 1.6;
 }
 
 .app-container {
+    height: 100vh;
     display: flex;
     width: 100%;
+    overflow: hidden;
+    /* Prevent container scroll */
 }
 
 /* Sidebar */
 .sidebar {
-    width: 250px;
+    width: 260px;
     background-color: var(--bg-card);
-    padding: 20px;
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
+    padding: 20px;
 }
 
 .logo h2 {
@@ -163,7 +173,8 @@ h1 {
 /* Charts Area */
 .charts-container {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr; /* Changed to fit 3 charts */
+    grid-template-columns: 2fr 1fr 1fr;
+    /* Changed to fit 3 charts */
     gap: 20px;
     margin-bottom: 20px;
 }
@@ -172,6 +183,7 @@ h1 {
     .charts-container {
         grid-template-columns: 1fr 1fr;
     }
+
     .chart-card.large {
         grid-column: span 2;
     }
@@ -181,6 +193,7 @@ h1 {
     .charts-container {
         grid-template-columns: 1fr;
     }
+
     .chart-card.large {
         grid-column: span 1;
     }
