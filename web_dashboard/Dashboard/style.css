@@ -530,6 +530,28 @@ table tr:hover {
     max-height: 260px;
 }
 
+
 .chart-card.large canvas {
     max-height: 320px;
+}
+
+/* Process Flow Section */
+.mermaid-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    overflow-x: auto;
+}
+
+.flow-container h3 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.flow-container {
+    padding: 1rem;
 }

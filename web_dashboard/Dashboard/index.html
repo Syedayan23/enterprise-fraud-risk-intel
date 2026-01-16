@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Charts.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Mermaid.js -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 </head>
 
 <body>
@@ -24,6 +26,7 @@
                     <li class="active"> <a href="#">Dashboard</a> </li>
                     <li> <a href="#">Transactions</a> </li>
                     <li> <a href="#">Alerts</a> </li>
+                    <li> <a href="#">Process Flow</a> </li>
                     <li> <a href="#">Settings</a> </li>
                 </ul>
             </nav>
@@ -75,6 +78,18 @@
                     <div class="chart-card">
                         <h3>Risk by Category</h3>
                         <canvas id="vendorChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- ADDED: Advanced Analytics Charts -->
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h3>Risk Level Distribution</h3>
+                        <canvas id="riskDistChart"></canvas>
+                    </div>
+                    <div class="chart-card large">
+                        <h3>Amount vs Risk Score Correlation</h3>
+                        <canvas id="amountRiskChart"></canvas>
                     </div>
                 </div>
 
@@ -133,6 +148,42 @@
                 </div>
                 <div id="alerts-container">
                     <!-- Cards injected via JS -->
+                </div>
+            </div>
+
+            <!-- VIEW: PROCESS FLOW -->
+            <div id="view-flow" class="view-section" style="display:none;">
+                <div class="flow-container">
+                    <h3>Transaction Processing Flow</h3>
+                    <div class="mermaid-card">
+                        <div class="mermaid">
+                            graph LR
+                            A[User Transaction] -->|Initiated| B(Risk Engine)
+                            B --> C{Risk Score > 80?}
+                            C -- Yes --> D[Block & Alert]
+                            C -- No --> E{Risk Score > 50?}
+                            E -- Yes --> F[Flag for Review]
+                            E -- No --> G[Approve]
+                            D --> H[Dashboard Alert]
+                            F --> H
+                            G --> I[Complete]
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-container" style="margin-top: 2rem;">
+                    <h3>System Architecture</h3>
+                    <div class="mermaid-card">
+                        <div class="mermaid">
+                            graph TD
+                            Client[Web Client] -->|HTTPS| LB[Load Balancer]
+                            LB -->|Route| FE[Frontend Server]
+                            LB -->|API| BE[Backend API]
+                            BE -->|Read/Write| DB[(Database)]
+                            BE -->|Async| ML[ML Risk Engine]
+                            ML -->|Score Update| DB
+                        </div>
+                    </div>
                 </div>
             </div>
 

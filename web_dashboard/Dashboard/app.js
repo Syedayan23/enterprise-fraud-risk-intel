@@ -4,6 +4,9 @@ const API_BASE = "/api";
 // ---------------- INIT ----------------
 document.addEventListener('DOMContentLoaded', () => {
     setupNavigation();
+    if (window.mermaid) {
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    }
     fetchStats();
     fetchTransactions();
 
@@ -26,6 +29,7 @@ function setupNavigation() {
         'Dashboard': 'view-dashboard',
         'Transactions': 'view-transactions',
         'Alerts': 'view-alerts',
+        'Process Flow': 'view-flow',
         'Settings': 'view-settings'
     };
 
@@ -221,4 +225,63 @@ function renderCharts(data) {
         data: { labels: Object.keys(vendorCounts), datasets: [{ data: Object.values(vendorCounts) }] },
         options: { responsive: true, maintainAspectRatio: false }
     });
+
+    // --- NEW CHARTS ---
+
+    // 1. Risk Level Distribution (Pie)
+    const riskDistCanvas = document.getElementById('riskDistChart');
+    if (riskDistCanvas) {
+        if (window.riskDistInstance) window.riskDistInstance.destroy();
+
+        const riskCounts = { 'Critical': 0, 'High': 0, 'Medium': 0, 'Low': 0 };
+        data.forEach(t => {
+            if (riskCounts[t.level] !== undefined) riskCounts[t.level]++;
+        });
+
+        window.riskDistInstance = new Chart(riskDistCanvas.getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(riskCounts),
+                datasets: [{
+                    data: Object.values(riskCounts),
+                    backgroundColor: ['#ef4444', '#f97316', '#eab308', '#22c55e']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'right' } }
+            }
+        });
+    }
+
+    // 2. Amount vs Risk Score (Scatter)
+    const amountRiskCanvas = document.getElementById('amountRiskChart');
+    if (amountRiskCanvas) {
+        if (window.amountRiskInstance) window.amountRiskInstance.destroy();
+
+        const scatterData = data.slice(0, 100).map(t => ({
+            x: t.amount,
+            y: t.score
+        }));
+
+        window.amountRiskInstance = new Chart(amountRiskCanvas.getContext('2d'), {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Transactions',
+                    data: scatterData,
+                    backgroundColor: 'rgba(59, 130, 246, 0.6)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { title: { display: true, text: 'Amount (INR)' } },
+                    y: { title: { display: true, text: 'Risk Score' }, min: 0, max: 100 }
+                }
+            }
+        });
+    }
 }
