@@ -1,13 +1,12 @@
 // Production: Relative path for Nginx Proxy (Antigravity)
 const API_BASE = "/api";
 
-// Initialize
+// ---------------- INIT ----------------
 document.addEventListener('DOMContentLoaded', () => {
     setupNavigation();
     fetchStats();
-    fetchTransactions(); // Initial Load
+    fetchTransactions();
 
-    // Auto-refresh unless disabled
     setInterval(() => {
         const refreshEnabled = document.getElementById('setting-refresh')?.checked ?? true;
         if (refreshEnabled) {
@@ -17,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 5000);
 });
 
+// ---------------- NAVIGATION ----------------
 function setupNavigation() {
     const navLinks = document.querySelectorAll('.sidebar nav li a');
     const views = document.querySelectorAll('.view-section');
@@ -51,6 +51,7 @@ function setupNavigation() {
     });
 }
 
+// ---------------- DATA ----------------
 async function fetchStats() {
     try {
         const res = await fetch(`${API_BASE}/stats`);
@@ -82,6 +83,7 @@ async function fetchTransactions() {
     }
 }
 
+// ---------------- TABLES ----------------
 function renderDashboardTable(transactions) {
     const tbody = document.getElementById('dashboard-transactions-body');
     if (!tbody) return;
@@ -98,7 +100,6 @@ function renderTransactionsView(transactions) {
     if (!tbody) return;
 
     const searchTerm = document.getElementById('tx-search')?.value.toLowerCase() || '';
-
     if (transactions.length === lastTxCount && searchTerm === lastSearchTerm) return;
 
     lastTxCount = transactions.length;
@@ -114,28 +115,19 @@ function renderTransactionsView(transactions) {
         : transactions;
 
     const displaySet = searchTerm ? filtered : filtered.slice(0, 500);
-
     displaySet.forEach(tx => tbody.appendChild(createTxRow(tx)));
-
-    if (!searchTerm && transactions.length > 500) {
-        const infoRow = document.createElement('tr');
-        infoRow.innerHTML = `<td colspan="9" style="text-align:center; color: var(--text-secondary); padding: 20px;">
-            Showing recent 500 of ${transactions.length} transactions.
-        </td>`;
-        tbody.appendChild(infoRow);
-    }
 }
 
 document.getElementById('tx-search')?.addEventListener('input', () =>
     renderTransactionsView(globalTransactions)
 );
 
+// ---------------- ALERTS ----------------
 function renderAlertsView(transactions) {
     const container = document.getElementById('alerts-container');
     if (!container) return;
 
     container.innerHTML = '';
-
     const criticals = transactions.filter(t => t.score > 70);
 
     if (!criticals.length) {
@@ -154,8 +146,8 @@ function renderAlertsView(transactions) {
                 <p><small>${tx.timestamp} • ${tx.location}</small></p>
             </div>
             <div class="alert-actions">
-                <button class="btn-primary" onclick="alert('Case #${tx.id} assigned')">Investigate</button>
-                <button class="btn-secondary" onclick="alert('Case #${tx.id} dismissed')">Dismiss</button>
+                <button class="btn-primary">Investigate</button>
+                <button class="btn-secondary">Dismiss</button>
             </div>
         `;
         container.appendChild(card);
@@ -178,7 +170,6 @@ function createTxRow(tx) {
         <td><input type="checkbox" ${tx.reviewed ? 'checked' : ''} disabled></td>
     `;
 
-    row.onclick = () => showModal(tx);
     return row;
 }
 
@@ -186,8 +177,7 @@ function formatMoney(amount) {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
 }
 
-// ---- Charts ----
-
+// ---------------- CHARTS ----------------
 let riskTrendChart = null;
 let locationChartInstance = null;
 let vendorChartInstance = null;
@@ -209,11 +199,7 @@ function renderCharts(data) {
         type: 'line',
         data: {
             labels: reversed.map(t => t.timestamp),
-            datasets: [{
-                data: reversed.map(t => t.score),
-                tension: 0.4,
-                fill: true
-            }]
+            datasets: [{ data: reversed.map(t => t.score), tension: 0.4, fill: true }]
         },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
