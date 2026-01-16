@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # 1. Frontend (Nginx)
+  frontend:
+    build: ./web_dashboard
+    ports:
+      - "80:80"
+    depends_on:
+      - java-backend
+    restart: always
+
+  # 2. Backend (Java)
+  java-backend:
+    build: ./java_app
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_PATH=/data/fraud_platform.db
+    volumes:
+      - db_data:/data
+    restart: always
+
+  # 3. Analytics Engine (Python)
+  risk-engine:
+    build: ./python_engine
+    ports:
+      - "5000:5000"
+    environment:
+      - DOCKER_ENV=true
+    volumes:
+      - db_data:/data
+    restart: always
+
+volumes:
+  db_data:
