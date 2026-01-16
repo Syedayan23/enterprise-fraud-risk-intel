@@ -169,22 +169,6 @@ function renderAlertsView(transactions) {
         container.appendChild(card);
     });
 }
-
-function createTxRow(tx) {
-    const row = document.createElement('tr');
-    const badgeClass = `badge-${tx.level.toLowerCase()}`;
-    row.innerHTML = `
-        <td>#${tx.id}</td>
-        <td>${tx.timestamp}</td>
-        <td>${formatMoney(tx.amount)}</td>
-        <td>${Math.round(tx.score)}</td>
-        <td><span class="badge ${badgeClass}">${tx.level}</span></td>
-        <td>${tx.reason}</td>
-        <td>${tx.reviewed ? 'Reviewed' : 'New'}</td>
-    `;
-    return row;
-}
-
 function formatMoney(amount) {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
 }
@@ -291,16 +275,14 @@ function exportData() {
 let riskTrendChart = null;
 
 function renderCharts(data) {
-    // Basic Trend Logic: Group by last few timestamps (mocking trend for now using simple index)
-    // In a real app, we'd aggregate by hour/minute. 
-    // Here we just plot the last 10 scores to show variance.
-
-    // Risk Trend Chart
-    if (window.riskTrendChart) {
-        window.riskTrendChart.destroy();
+    if (riskTrendChart && typeof riskTrendChart.destroy === "function") {
+        riskTrendChart.destroy();
     }
-    const ctx = document.getElementById('riskTrendChart').getContext('2d');
-    window.riskTrendChart = new Chart(ctx, {
+    const canvas = document.getElementById('riskTrendChart');
+    if (!canvas) return; // safety guard
+
+    const ctx = canvas.getContext('2d');
+    riskTrendChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: [],
@@ -326,14 +308,14 @@ function renderCharts(data) {
 
     // Update Trend Data
     const reversed = [...data].reverse().slice(-50); // Show last 50 points
-    window.riskTrendChart.data.labels = reversed.map(t => {
+    riskTrendChart.data.labels = reversed.map(t => {
         // Handle various timestamp formats robustly
         const dateStr = t.timestamp.replace(' ', 'T'); // Ensure ISO format
         const date = new Date(dateStr);
         return isNaN(date) ? t.timestamp : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     });
-    window.riskTrendChart.data.datasets[0].data = reversed.map(t => t.score);
-    window.riskTrendChart.update();
+    riskTrendChart.data.datasets[0].data = reversed.map(t => t.score);
+    riskTrendChart.update();
 
     // Location Chart
     // Aggregate risk counts by location
@@ -346,9 +328,9 @@ function renderCharts(data) {
     const locLabels = Object.keys(locationCounts);
     const locData = Object.values(locationCounts);
 
-    if (window.locationChartInstance) {
-        window.locationChartInstance.destroy();
-    }
+    if (window.locationChartInstance && typeof window.locationChartInstance.destroy === "function") {
+    window.locationChartInstance.destroy();
+}
     const ctxLoc = document.getElementById('locationChart').getContext('2d');
     window.locationChartInstance = new Chart(ctxLoc, {
         type: 'bar',
@@ -388,9 +370,9 @@ function renderCharts(data) {
     const vendLabels = Object.keys(vendorCounts);
     const vendData = Object.values(vendorCounts);
 
-    if (window.vendorChartInstance) {
-        window.vendorChartInstance.destroy();
-    }
+    if (window.vendorChartInstance && typeof window.vendorChartInstance.destroy === "function") {
+    window.vendorChartInstance.destroy();
+}
     const ctxVend = document.getElementById('vendorChart').getContext('2d');
     window.vendorChartInstance = new Chart(ctxVend, {
         type: 'doughnut',
